@@ -8,10 +8,9 @@ const ProductImage = ({ imageUrl }) => {
 const styles = StyleSheet.create({
   image: {
     width: "100%",
-    height: 200, // Set the height according to your layout
+    height: 200,
     resizeMode: "contain",
   },
-  // Add additional styling as needed
 });
 
 export default ProductImage;

@@ -1,55 +1,71 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Toast from "react-native-toast-message";
-import axios from "axios";
-import { Logo, TextInputField } from "../../components";
+import { AuthService } from "../../service";
+import { Logo, TextInputField, DynamicForm } from "../../components";
+interface FormFieldDefinition {
+  type: "text" | "date" | "picker" | "password";
+  key: string;
+  label: string;
+  value: string | Date;
+  options?: { label: string; value: string }[];
+}
 const RegisterScreen = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [address, setAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const formFields: FormFieldDefinition[] = [
+    { type: "text", key: "userName", label: "User Name", value: "" },
+    { type: "text", key: "name", label: "Name", value: "" },
+    {
+      type: "date",
+      key: "dateOfBirth",
+      label: "Date of Birth",
+      value: new Date(),
+    },
+    {
+      type: "picker",
+      key: "gender",
+      label: "Gender",
+      value: "",
+      options: [
+        { label: "Male", value: "male" },
+        { label: "Female", value: "female" },
+        { label: "Other", value: "other" },
+      ],
+    },
+    { type: "text", key: "email", label: "Email", value: "" },
+    { type: "text", key: "phoneNumber", label: "Phone Number", value: "" },
+    { type: "password", key: "password", label: "Password", value: "" },
+    {
+      type: "password",
+      key: "passwordConfirm",
+      label: "Confirm Password",
+      value: "",
+    },
+  ];
+  const [formData, setFormData] = useState({
+    userName: "",
+    name: "",
+    dateOfBirth: new Date(),
+    gender: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    passwordConfirm: "",
+  });
+  const handleFormChange = (key: string, value: string | Date) => {
+    setFormData({ ...formData, [key]: value });
+  };
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      Toast.show({
-        type: "error",
-        text1: "Passwords do not match",
-      });
-      return;
-    }
-
-    try {
-      const endpoint = `${process.env.JWT_SECRET}/register`;
-      const response = await axios.post(endpoint, {
-        email: email,
-        fullName: fullName,
-        address: address,
-        password: password,
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        Toast.show({
-          type: "success",
-          text1: "Registration Successful",
-        });
-        navigation.navigate("Login");
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Registration Failed",
-          text2: response.data.message,
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Registration Error",
-        text2: error.response
-          ? error.response.data.message
-          : "An error occurred. Please try again later.",
-      });
-    }
+    const response = await AuthService.register(
+      formData.userName,
+      formData.name,
+      formData.dateOfBirth.toISOString(),
+      formData.gender,
+      formData.email,
+      formData.phoneNumber,
+      formData.password,
+      formData.password
+    );
+    if (response) navigation.navigate("Login");
   };
 
   return (
@@ -57,35 +73,12 @@ const RegisterScreen = ({ navigation }) => {
       <Logo />
       <Text style={styles.header}>Register</Text>
 
-      <TextInputField
-        placeholder="Full Name"
-        value={fullName}
-        onChangeText={setFullName}
-        secureTextEntry={false}
-      />
-      <TextInputField
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        secureTextEntry={false}
-      />
-      <TextInputField
-        placeholder="Address"
-        value={address}
-        onChangeText={setAddress}
-        secureTextEntry={false}
-      />
-      <TextInputField
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={true}
-      />
-      <TextInputField
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry={true}
+      <DynamicForm
+        formFields={formFields.map((field) => ({
+          ...field,
+          value: formData[field.key],
+        }))}
+        onChange={handleFormChange}
       />
 
       <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>

@@ -9,71 +9,52 @@ import {
 import { CustomPagination } from "../../components";
 import FilterSearchBar from "./FilterSearchBar";
 import FurnitureItem from "./FurnitureItem";
+import { CategoryService, ProductService } from "../../service";
+import { Category, Product } from "../../interface";
 
-const typeMapping = {
-  all: "All",
-  1: "Chairs",
-  2: "Tables",
-  3: "Sofas",
-  4: "Beds",
-};
-
-const initialFurnitureData = [
-  {
-    id: "1",
-    name: "Royal Palm Sofa",
-    price: "50.18",
-    imageUri: "https://via.placeholder.com/150",
-    type: "3",
-  },
-  {
-    id: "2",
-    name: "Leatherette Sofa",
-    price: "30.99",
-    imageUri: "https://via.placeholder.com/150",
-    type: "3",
-  },
-  {
-    id: "3",
-    name: "Leatherette Sofa",
-    price: "30.99",
-    imageUri: "https://via.placeholder.com/150",
-    type: "3",
-  },
-];
 const PAGE_SIZE = 10;
 const HomeScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filteredData, setFilteredData] = useState(initialFurnitureData);
-  const [furnitureDisplay, setFurnitureDisplay] = useState([]);
-  const [totalPages, setTotalPages] = useState(
-    Math.ceil(initialFurnitureData.length / PAGE_SIZE)
-  );
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [product, setProduct] = useState<Product[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [typeMapping, setTypeMapping] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await CategoryService.getCategories();
+      setCategories(response);
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
-    let newFilteredData = initialFurnitureData;
-    if (searchType !== "all") {
-      newFilteredData = initialFurnitureData.filter(
-        (item) => item.type === searchType
+    const newTypeMapping = categories.reduce((acc, category) => {
+      acc[category.id] = category.name;
+      return acc;
+    }, {} as Record<string, string>);
+    setTypeMapping(newTypeMapping);
+  }, [categories]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const products = await ProductService.getProductsByPage(
+        currentPage,
+        searchQuery,
+        searchType
       );
-    }
-
-    if (searchQuery !== "") {
-      newFilteredData = newFilteredData.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      setProduct(products);
+    };
+    const fetchToTalPageProduct = async () => {
+      const total = await ProductService.getTotalPages(
+        currentPage,
+        searchQuery,
+        searchType
       );
-    }
-
-    setFilteredData(newFilteredData);
-    setTotalPages(Math.ceil(newFilteredData.length / PAGE_SIZE));
-    setFurnitureDisplay(
-      newFilteredData.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE
-      )
-    );
+      setTotalPages(total);
+    };
+    fetchToTalPageProduct();
+    fetchProducts();
   }, [searchType, searchQuery, currentPage]);
 
   const handleFilterChange = (type, query) => {
@@ -105,7 +86,7 @@ const HomeScreen = ({ navigation }) => {
         typeMapping={typeMapping}
       />
       <FlatList
-        data={furnitureDisplay}
+        data={product}
         renderItem={({ item }) => (
           <FurnitureItem
             id={item.id}

@@ -1,12 +1,13 @@
 import {
   Profile,
-  ToRecieve,
-  ToShip,
-  Process,
+  ContactDetail,
   ContactList,
-  Order,
+  OrderPages,
   VoucherList,
   SettingAccount,
+  OrderDetailScreen,
+  TransactionPages,
+  StatusOrderProcessingScreen,
 } from "../../../screens";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -20,30 +21,27 @@ const ProfileStackNavigator = () => {
         options={{ title: "Profile" }}
       />
       <Stack.Screen
-        name="ToShip"
-        component={ToShip}
-        options={{ title: "To Ship" }}
+        name="Order"
+        component={OrderPages}
+        options={{ title: "Order" }}
       />
       <Stack.Screen
-        name="ToReceive"
-        component={ToRecieve}
-        options={{ title: "To Receive" }}
+        name="OrderDetail"
+        component={OrderDetailScreen}
+        options={{ title: "Order Detail" }}
       />
+
       <Stack.Screen
-        name="Process"
-        component={Process}
-        options={{ title: "Process" }}
+        name="ContactDetail"
+        component={ContactDetail}
+        options={{ title: "ContactDetail" }}
       />
       <Stack.Screen
         name="ContactList"
         component={ContactList}
         options={{ title: "Contact list" }}
       />
-      <Stack.Screen
-        name="Order"
-        component={Order}
-        options={{ title: "Order" }}
-      />
+
       <Stack.Screen
         name="VoucherList"
         component={VoucherList}
@@ -53,6 +51,16 @@ const ProfileStackNavigator = () => {
         name="SettingAccount"
         component={SettingAccount}
         options={{ title: "Setting Account" }}
+      />
+      <Stack.Screen
+        name="Transactions"
+        component={TransactionPages}
+        options={{ title: "Transaction Screen" }}
+      />
+      <Stack.Screen
+        name="StatusOderProcessing"
+        component={StatusOrderProcessingScreen}
+        options={{ title: "Status" }}
       />
     </Stack.Navigator>
   );

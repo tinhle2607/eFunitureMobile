@@ -1,4 +1,4 @@
-import { AppointmentList } from "../../../screens";
+import { AppointmentList, AppointmentDetailScreen } from "../../../screens";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const Stack = createNativeStackNavigator();
@@ -9,6 +9,11 @@ const CartStackNavigator = () => {
         name="Appointmet"
         component={AppointmentList}
         options={{ title: "AppointmentList" }}
+      />
+      <Stack.Screen
+        name="AppointmentDetail"
+        component={AppointmentDetailScreen}
+        options={{ title: "Appointment Screen" }}
       />
     </Stack.Navigator>
   );

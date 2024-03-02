@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
-const CartItem = ({
+const CartItemRender = ({
   item,
   onRemove,
   onAddQuantity,
@@ -160,4 +160,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CartItem;
+export default CartItemRender;
