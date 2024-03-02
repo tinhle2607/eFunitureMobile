@@ -5,14 +5,17 @@ import Profile from "./profile";
 import Register from "./register";
 import AppointmentBooking from "./appointmentBooking";
 import AppointmentList from "./appointmentList";
-import ToShip from "./toShip";
-import ToRecieve from "./toReceive";
+
 import ContactList from "./contactList";
-import Process from "./process";
-import Order from "./order";
+import ContactDetail from "./ContactDetail";
+import OrderPages from "./order";
 import VoucherList from "./voucherList";
 import SettingAccount from "./settingAccount";
 import ProductScreen from "./productDetails";
+import AppointmentDetailScreen from "./appointmentDetail";
+import OrderDetailScreen from "./OrderDetail";
+import TransactionPages from "./transaction";
+import StatusOrderProcessingScreen from "./statusOrderProcess";
 export {
   Home,
   Login,
@@ -22,11 +25,13 @@ export {
   AppointmentBooking,
   AppointmentList,
   ContactList,
-  Process,
-  ToRecieve,
-  ToShip,
-  Order,
+  ContactDetail,
+  OrderPages,
   VoucherList,
   SettingAccount,
   ProductScreen,
+  AppointmentDetailScreen,
+  OrderDetailScreen,
+  TransactionPages,
+  StatusOrderProcessingScreen,
 };

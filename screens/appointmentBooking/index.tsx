@@ -6,6 +6,7 @@ import TimeSelector from "./TimeSelector";
 import UserInfoForm from "./UserInfoForm";
 import Toast from "react-native-toast-message";
 import Axios from "axios";
+import { AppointmentService } from "../../service";
 
 const AppointmentBookingPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -14,7 +15,6 @@ const AppointmentBookingPage = () => {
   const [contactNumber, setContactNumber] = useState("");
 
   const handleSubmit = async () => {
-    const endpoint = `${process.env.JWT_SECRET}/appointment`;
     if (!selectedDate || !selectedTime || !fullName || !contactNumber) {
       Toast.show({
         type: "error",
@@ -24,26 +24,12 @@ const AppointmentBookingPage = () => {
       return;
     }
 
-    const appointmentData = {
-      date: selectedDate.toISOString(),
-      time: selectedTime,
-      fullName: fullName,
-      contactNumber: contactNumber,
-    };
-
-    try {
-      const response = await Axios.post(endpoint, appointmentData);
-
-      Toast.show({
-        type: "success",
-        text1: "Booking successful!",
-      });
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Booking failed",
-      });
-    }
+    AppointmentService.createAppointment(
+      selectedDate.toISOString(),
+      selectedTime,
+      fullName,
+      contactNumber
+    );
   };
 
   return (

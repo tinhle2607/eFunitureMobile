@@ -2,58 +2,60 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { CustomTable, CustomPagination } from "../../components";
 import { StatusGraph } from "../../helper";
+import { Appointment } from "../../interface";
+import { AppointmentService } from "../../service";
 
 const statusMapping = {
   1: "Pending",
-  2: "In Progress",
+  2: "Waiting",
   3: "Completed",
   4: "Cancelled",
 };
 
 const statusGraph = new StatusGraph();
-statusGraph.addEdge(1, 2);
-statusGraph.addEdge(2, 3);
 statusGraph.addEdge(2, 4);
+statusGraph.addEdge(1, 4);
 
-const App = () => {
-  const [data, setData] = useState([
-    { id: 1, name: "Item 1", description: "Description 1", status: 1 },
-    { id: 2, name: "Item 2", description: "Description 2", status: 2 },
-  ]);
-  const PAGE_SIZE = 10; // Số lượng items trên mỗi trang
-  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
-  const [totalPages, setTotalPages] = useState(1); // Tổng số trang
+const App = ({ navigation }) => {
+  const columns = [
+    { id: "nameStaff", label: "Tên nhân viên ", type: "text" },
+    { id: "description", label: "Mô tả", type: "text" },
+    { id: "status", label: "Trạng thái", type: "select" },
+  ];
+  const [data, setData] = useState<Appointment[]>([]);
 
-  useEffect(() => {
-    // Tính tổng số trang dựa trên dữ liệu
-    setTotalPages(Math.ceil(data.length / PAGE_SIZE));
-  }, [data]);
-  const currentData = () => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    const endIndex = startIndex + PAGE_SIZE;
-    return data.slice(startIndex, endIndex);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchData = async () => {
+    const totalPages = await AppointmentService.getTotalPages();
+    setTotalPages(totalPages);
+    const response = await AppointmentService.getAppointmentsByPage(
+      currentPage
+    );
+    setData(response);
   };
   useEffect(() => {
-    setData(currentData());
+    fetchData();
   }, [currentPage]);
 
   const onUpdateStatus = (id, newStatus) => {
-    const newData = data.map((item) => {
-      if (item.id === id) {
-        return { ...item, status: newStatus };
-      }
-      return item;
-    });
-    setData(newData);
+    AppointmentService.updateAppointmentStatus(id, newStatus);
+    fetchData();
+  };
+  const viewDetail = (id) => {
+    navigation.navigate("AppointmentDetail", { itemId: id });
   };
 
   return (
     <View style={styles.container}>
       <CustomTable
-        data={currentData()} // Sử dụng dữ liệu của trang hiện tại
+        columns={columns}
+        data={data}
         statusGraph={statusGraph}
         onUpdateStatus={onUpdateStatus}
         statusMapping={statusMapping}
+        viewDetail={viewDetail}
       />
       <CustomPagination
         totalPages={totalPages}

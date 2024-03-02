@@ -11,20 +11,10 @@ import { CustomPagination } from "../../components";
 const ITEMS_PER_PAGE = 5;
 
 const VoucherScreen = ({ vouchers, selectedVoucherIds, onSelectVoucher }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(vouchers.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
   return (
     <View style={styles.container}>
       <FlatList
-        data={vouchers.slice(
-          (currentPage - 1) * ITEMS_PER_PAGE,
-          currentPage * ITEMS_PER_PAGE
-        )}
+        data={vouchers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -35,14 +25,9 @@ const VoucherScreen = ({ vouchers, selectedVoucherIds, onSelectVoucher }) => {
             ]}
             onPress={() => onSelectVoucher(item)}
           >
-            <Text style={styles.voucherText}>{item.code}</Text>
+            <Text style={styles.voucherText}>{item.name}</Text>
           </TouchableOpacity>
         )}
-      />
-      <CustomPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
       />
     </View>
   );

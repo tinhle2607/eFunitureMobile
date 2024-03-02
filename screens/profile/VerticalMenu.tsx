@@ -7,11 +7,15 @@ const VerticalMenu = () => {
   const navigation = useNavigation<any>();
 
   const menuItems = [
-    { key: "VoucherList", label: "Vouchers", iconName: "ticket-outline" },
     {
       key: "SettingAccount",
       label: "Account Settings",
       iconName: "account-cog-outline",
+    },
+    {
+      key: "Transactions",
+      label: "Transaction",
+      iconName: "cash-check",
     },
     { key: "logout", label: "Logout", iconName: "logout" },
   ];

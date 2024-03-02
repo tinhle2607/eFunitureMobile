@@ -1,78 +1,136 @@
 import React from "react";
 import {
-  View,
-  Text,
   FlatList,
   StyleSheet,
-  ListRenderItemInfo,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
 } from "react-native";
-import CustomDropdown from "./customDropdown";
 import { StatusGraph } from "../helper";
+import CustomDropdown from "./customDropdown";
 
-interface Item {
-  id: number;
-  name: string;
-  description: string;
-  status: number;
-}
-
-interface Action {
+interface Column {
+  id: string;
   label: string;
-  onPress: (item: Item) => void;
+  type: string;
+  formatter?: (value: any) => string;
 }
 
 interface CustomTableProps {
-  data: Item[];
-  statusGraph: StatusGraph;
-  onUpdateStatus: (id: number, newStatus: number) => void;
-  statusMapping: { [key: number]: string };
+  columns: Column[];
+  data: any[];
+  statusGraph?: StatusGraph;
+  onUpdateStatus?: (id: number, newStatus: number) => void;
+  statusMapping?: { [key: number]: string };
+  viewDetail?: (item: string) => void;
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
+  columns,
   data,
   statusGraph,
   onUpdateStatus,
   statusMapping,
+  viewDetail,
 }) => {
-  const renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+  const renderItem = ({ item }) => {
     const nextStatusOptions = statusGraph
-      .getNextStates(item.status)
-      .map((status) => statusMapping[status]);
+      ? statusGraph
+          .getNextStates(item.status)
+          .map((status) => statusMapping?.[status])
+      : [];
 
     return (
-      <View style={styles.row}>
-        <Text style={styles.text}>{item.name}</Text>
-        <Text style={styles.text}>{item.description}</Text>
-        <CustomDropdown
-          currentValue={statusMapping[item.status]}
-          options={nextStatusOptions}
-          onSelect={(selectedValue) => {
-            const newStatus = parseInt(
-              Object.keys(statusMapping).find(
-                (key) => statusMapping[key] === selectedValue
-              ) || "0",
-              10
-            );
-            onUpdateStatus(item.id, newStatus);
-          }}
-        />
-      </View>
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => viewDetail && viewDetail(item.id)}
+      >
+        {columns.map((column) => {
+          switch (column.type) {
+            case "text":
+              return (
+                <Text key={column.id} style={styles.text}>
+                  {column.formatter
+                    ? column.formatter(item[column.id])
+                    : item[column.id]}
+                </Text>
+              );
+
+            case "select":
+              if (!statusMapping) return null;
+              return (
+                <CustomDropdown
+                  key={column.id}
+                  currentValue={statusMapping[item[column.id]]}
+                  options={nextStatusOptions}
+                  onSelect={(selectedValue) => {
+                    const newStatus = parseInt(
+                      Object.keys(statusMapping).find(
+                        (key) => statusMapping[key] === selectedValue
+                      ) || "0",
+                      10
+                    );
+                    if (onUpdateStatus) {
+                      onUpdateStatus(item.id, newStatus);
+                    }
+                  }}
+                />
+              );
+            case "image":
+              return (
+                <View style={styles.imageContainer} key={column.id}>
+                  <Image
+                    source={{ uri: item[column.id] }}
+                    style={styles.productImage}
+                  />
+                </View>
+              );
+            default:
+              return null;
+          }
+        })}
+      </TouchableOpacity>
     );
   };
+  const renderHeader = () => (
+    <View style={styles.headerRow}>
+      {columns.map((column) => (
+        <Text key={column.id} style={styles.headerText}>
+          {column.label}
+        </Text>
+      ))}
+    </View>
+  );
 
   return (
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
-      contentContainerStyle={styles.container}
-    />
+    <View>
+      {renderHeader()}
+
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.container}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     margin: 10,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#f2f2f2", // Màu nền cho header
+  },
+  headerText: {
+    fontWeight: "bold",
+    fontSize: 16,
   },
   row: {
     flexDirection: "row",
@@ -84,6 +142,15 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
+  },
+  imageContainer: {
+    borderRadius: 25,
+    overflow: "hidden",
+  },
+  productImage: {
+    width: 50,
+    height: 50,
+    marginRight: 16,
   },
 });
 

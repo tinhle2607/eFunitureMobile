@@ -10,12 +10,7 @@ const HorizontalMenu = () => {
       label: "Contact",
       iconName: "account-circle-outline",
     },
-    { key: "ToShip", label: "To Ship", iconName: "truck-outline" },
-    {
-      key: "ToReceive",
-      label: "To Receive",
-      iconName: "package-variant-closed",
-    },
+
     { key: "Process", label: "Process", iconName: "cogs" },
     { key: "Order", label: "Order", iconName: "clipboard-text-outline" },
   ];

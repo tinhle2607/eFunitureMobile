@@ -35,6 +35,19 @@ const FilterSearchBar: React.FC<FilterSearchBarProps> = ({
         showsHorizontalScrollIndicator={false}
         style={styles.filterContainer}
       >
+        <TouchableOpacity
+          key={0}
+          style={[
+            styles.filterButton,
+            selectedType === "0" && styles.selectedFilterButton,
+          ]}
+          onPress={() => {
+            setSelectedType("0");
+            onFilterChange("0", searchText);
+          }}
+        >
+          <Text style={styles.filterText}>All</Text>
+        </TouchableOpacity>
         {Object.entries(typeMapping).map(([key, value]) => (
           <TouchableOpacity
             key={key}

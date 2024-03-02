@@ -1,44 +1,33 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Toast from "react-native-toast-message";
-import axios from "axios";
-import { Logo, FacebookButton, TextInputField } from "../../components";
-
+import { Logo, DynamicForm } from "../../components";
+import { AuthService } from "../../service";
+interface FormFieldDefinition {
+  type: "text" | "date" | "picker" | "password";
+  key: string;
+  label: string;
+  value: string | Date;
+  options?: { label: string; value: string }[];
+}
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const formFields: FormFieldDefinition[] = [
+    { type: "text", key: "userName", label: "User Name", value: "" },
+    { type: "password", key: "password", label: "Password", value: "" },
+  ];
+  const [formData, setFormData] = useState({
+    userName: "",
+    password: "",
+  });
+  const handleFormChange = (key: string, value: string | Date) => {
+    setFormData({ ...formData, [key]: value });
+  };
 
   const handleLogin = async () => {
-    try {
-      const endpoint = `${process.env.JWT_SECRET}/login`;
-      const response = await axios.post(endpoint, {
-        email: email,
-        password: password,
-      });
-
-      const { data } = response;
-
-      if (response.status === 200) {
-        Toast.show({
-          type: "success",
-          text1: "Login Successful",
-        });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Login Failed",
-          text2: data.message,
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Login Error",
-        text2: error.response
-          ? error.response.data.message
-          : "An error occurred. Please try again later.",
-      });
-    }
+    const response = await AuthService.login(
+      formData.userName,
+      formData.password
+    );
+    if (response) navigation.navigate("Home");
   };
 
   return (
@@ -46,17 +35,12 @@ const LoginScreen = ({ navigation }) => {
       <Logo />
       <Text style={styles.welcome}>Welcome</Text>
 
-      <TextInputField
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        secureTextEntry={false}
-      />
-      <TextInputField
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={true}
+      <DynamicForm
+        formFields={formFields.map((field) => ({
+          ...field,
+          value: formData[field.key],
+        }))}
+        onChange={handleFormChange}
       />
 
       <TouchableOpacity>

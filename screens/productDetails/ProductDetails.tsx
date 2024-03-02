@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 interface ProductDetailsProps {
   name: string;
   description: string;
-  price: string;
+  price: number;
   onQuantityChange: (quantity: number) => void;
 }
 
