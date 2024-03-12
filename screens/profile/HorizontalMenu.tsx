@@ -11,7 +11,6 @@ const HorizontalMenu = () => {
       iconName: "account-circle-outline",
     },
 
-    { key: "Process", label: "Process", iconName: "cogs" },
     { key: "Order", label: "Order", iconName: "clipboard-text-outline" },
   ];
 

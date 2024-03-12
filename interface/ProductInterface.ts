@@ -2,7 +2,10 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  imageUri: string;
-  category: number;
+  inventoryQuantity: number;
+  image: string;
   description: string;
+  categoryId: string;
+  categoryName: string;
+  status: number;
 }

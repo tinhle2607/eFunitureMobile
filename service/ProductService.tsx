@@ -1,45 +1,21 @@
 import axios from "axios";
 
 import { Product } from "../interface";
+import Toast from "react-native-toast-message";
+import API_URL_ENV from "../app/config/api";
 
-const API_URL = "api";
-const initialProducts: Product[] = [
-  {
-    id: "33",
-    name: "Sản phẩm A",
-    category: 1,
-    description: "123456",
-    imageUri:
-      "https://i.pinimg.com/originals/bf/44/f0/bf44f0dce9873f824d00bfb9617f97b4.jpg",
-    price: 200,
-  },
-  {
-    id: "2",
-    name: "Sản phẩm B",
-    category: 1,
-    description: "123456",
-    imageUri:
-      "https://i.pinimg.com/originals/bf/44/f0/bf44f0dce9873f824d00bfb9617f97b4.jpg",
-    price: 200,
-  },
-  {
-    id: "6",
-    name: "Sản phẩm C",
-    category: 1,
-    description: "123456",
-    imageUri:
-      "https://i.pinimg.com/originals/bf/44/f0/bf44f0dce9873f824d00bfb9617f97b4.jpg",
-    price: 200,
-  },
-];
+const API_URL = API_URL_ENV + `/Product`;
+const initialProducts: Product[] = [];
 
 const product: Product = {
-  id: "6",
-  name: "Sản phẩm C",
-  category: 1,
-  description: "123456",
-  imageUri:
-    "https://i.pinimg.com/originals/bf/44/f0/bf44f0dce9873f824d00bfb9617f97b4.jpg",
+  id: "",
+  name: "",
+  categoryId: "",
+  description: "",
+  categoryName: "",
+  image: "ldsald",
+  inventoryQuantity: 0,
+  status: 0,
   price: 200,
 };
 
@@ -47,20 +23,33 @@ class ProductService {
   static async getProductsByPage(
     page: number,
     searchName: string,
-    category: string
+    category: string,
+    price: any
   ) {
-    return initialProducts;
     try {
-      const response = await axios.get(`${API_URL}/Products`, {
-        params: { page, searchName },
+      const response = await axios.get(`${API_URL}/FilterProducts2`, {
+        params: {
+          page: page,
+          productName: searchName,
+          categoryId: category,
+          minPrice: price.min,
+          maxPrice: price.max,
+          pageSize: 10,
+        },
       });
-      if (response.data.success === true) {
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
-        // toast.error(response.data.message);
+        Toast.show({
+          type: "error",
+          text1: response.data.messages,
+        });
       }
     } catch (error) {
-      //   toast.error("Something went wrong");
+      Toast.show({
+        type: "error",
+        text1: "Error server",
+      });
     }
   }
 
@@ -85,10 +74,13 @@ class ProductService {
   }
 
   static async getProductById(ProductId: string) {
-    return product;
     try {
-      const response = await axios.get(`${API_URL}/Products/${ProductId}`);
-      if (response.data.success !== true) {
+      const response = await axios.get(`${API_URL}/GetProductByID`, {
+        params: {
+          id: ProductId,
+        },
+      });
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
         // toast.error(response.data.message);

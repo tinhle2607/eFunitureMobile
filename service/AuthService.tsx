@@ -7,50 +7,65 @@ import { Account } from "../interface";
 
 const API_URL = API_URL_ENV + `/Authentication`;
 const account: Account = {
-  dateOfBird: "20/3/2002",
-  email: "bac@gamil.com",
-  gender: "male",
-  id: "231",
-  name: "test",
-  password: "32132",
-  phoneNumber: "9038219381",
-  userName: "test",
+  id: "",
+  name: "",
+  email: "",
+  password: "",
+  address: "",
+  wallet: 0,
+  roles: "",
+  dateOfBird: "",
+  gender: "",
+  phoneNumber: "",
+  lockoutEnd: "",
 };
+
 class AuthService {
   static async login(userName: string, password: string) {
-    return axios
-      .post(API_URL + "/Login", {
+    try {
+      const response = await axios.post(API_URL + "/Login", {
         userName,
         password,
-      })
-      .then((response) => {
-        if (response.data.isSuccess && response.data.data) {
-          AsyncStorage.setItem("user", JSON.stringify(response.data.data));
+      });
 
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${response.data.data}`;
-          Toast.show({
-            type: "success",
-            text1: "Login Successful",
-          });
-          return true;
-        } else {
-          Toast.show({
-            type: "error",
-            text1: response.data.message,
-          });
-        }
-        return false;
-      })
-      .catch((error) => {
+      if (response.data.isSuccess && response.data.data) {
+        await AsyncStorage.setItem(
+          "accessToken",
+          response.data.data.accessToken
+        );
+        await AsyncStorage.setItem(
+          "refreshToken",
+          response.data.data.refreshToken
+        );
+        await AsyncStorage.setItem("user", "true");
+        // const accessToken = await AsyncStorage.getItem("accessToken");
+        // Toast.show({
+        //   type: "success",
+        //   text1: accessToken,
+        // });
+        Toast.show({
+          type: "success",
+          text1: "Login Successful",
+        });
+
+        return true;
+      } else {
         Toast.show({
           type: "error",
-          text1: "Error Login",
+          text1: response.data.message,
         });
-        return false;
+      }
+    } catch (error) {
+      console.error("Error Login:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error Login",
       });
+    }
+
+    return false;
   }
+
   static async register(
     userName: string,
     name: string,
@@ -97,7 +112,9 @@ class AuthService {
   }
 
   static async logout() {
-    AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("accessToken");
+    await AsyncStorage.removeItem("refreshToken");
     axios.defaults.headers.common["Authorization"] = "";
     Toast.show({
       type: "success",
@@ -105,8 +122,38 @@ class AuthService {
     });
   }
 
-  static async getCurrentUser() {
-    return account;
+  static async reNewToken() {
+    const refreshToken = await AsyncStorage.getItem("refreshToken");
+    const accessToken = await AsyncStorage.getItem("accessToken");
+    try {
+      delete axios.defaults.headers.common["Authorization"];
+      const response = await axios.post(API_URL + "/RenewToken", {
+        refreshToken: refreshToken,
+        accessToken: accessToken,
+      });
+
+      if (response.data.isSuccess === true) {
+        await AsyncStorage.setItem(
+          "accessToken",
+          response.data.data.accessToken
+        );
+        await AsyncStorage.setItem(
+          "refreshToken",
+          response.data.data.refreshToken
+        );
+        await AsyncStorage.setItem("user", "true");
+
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${response.data.data.accessToken}`;
+      }
+      return;
+    } catch (error) {
+      console.error("Error renewing token:", error);
+    }
+    await AsyncStorage.removeItem("user");
+
+    return;
   }
   static async updateUser(
     name: string,

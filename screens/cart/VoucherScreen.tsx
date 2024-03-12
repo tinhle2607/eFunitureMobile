@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,11 +6,8 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import { CustomPagination } from "../../components";
 
-const ITEMS_PER_PAGE = 5;
-
-const VoucherScreen = ({ vouchers, selectedVoucherIds, onSelectVoucher }) => {
+const VoucherScreen = ({ vouchers, selectedVoucherId, onSelectVoucher }) => {
   return (
     <View style={styles.container}>
       <FlatList
@@ -18,10 +15,9 @@ const VoucherScreen = ({ vouchers, selectedVoucherIds, onSelectVoucher }) => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            key={item.id}
             style={[
               styles.voucherButton,
-              selectedVoucherIds.includes(item.id) && styles.selectedVoucher,
+              selectedVoucherId === item.id && styles.selectedVoucher,
             ]}
             onPress={() => onSelectVoucher(item)}
           >
@@ -34,7 +30,9 @@ const VoucherScreen = ({ vouchers, selectedVoucherIds, onSelectVoucher }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    // Add any container styles you might need
+  },
   voucherButton: {
     padding: 10,
     marginVertical: 5,

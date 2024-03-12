@@ -2,8 +2,10 @@ import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthService } from "../../service";
 
-const VerticalMenu = () => {
+const VerticalMenu = ({ navigate }) => {
   const navigation = useNavigation<any>();
 
   const menuItems = [
@@ -20,9 +22,11 @@ const VerticalMenu = () => {
     { key: "logout", label: "Logout", iconName: "logout" },
   ];
 
-  const handleMenuSelect = (itemKey: string) => {
+  const handleMenuSelect = async (itemKey: string) => {
     if (itemKey === "logout") {
-      console.log("Logging out...");
+      await AuthService.logout();
+      console.log(AsyncStorage.getItem("user"));
+      navigation.navigate("Home");
     } else {
       navigation.navigate(itemKey);
     }

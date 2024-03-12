@@ -5,17 +5,20 @@ import ProductImage from "./ProductImage";
 import ProductDetails from "./ProductDetails";
 import Button from "./Button";
 import { Product } from "../../interface";
-import { ProductService } from "../../service";
+import { CartService, ProductService } from "../../service";
 
 const ProductScreen = ({ route }) => {
   const { itemId } = route.params;
   const initialProduct: Product = {
-    category: 0,
+    categoryId: "",
     description: "",
     id: "",
-    imageUri: "https://i.",
+    image: "https://i.",
     name: "",
     price: 0,
+    categoryName: "",
+    inventoryQuantity: 0,
+    status: 0,
   };
   const [quantity, setQuantity] = useState(1);
 
@@ -33,25 +36,12 @@ const ProductScreen = ({ route }) => {
   };
 
   const handleBuyPress = () => {
-    Alert.alert(
-      "Buy Product",
-      `You have added ${quantity} of "${productData.name}" to your cart.`,
-      [
-        {
-          text: "Go to Cart",
-          onPress: () => console.log("Navigate to Cart Screen"),
-        },
-        {
-          text: "Continue Shopping",
-          onPress: () => console.log("Continue Shopping"),
-        },
-      ]
-    );
+    CartService.addToCart(quantity, productData.id);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <ProductImage imageUrl={productData.imageUri} />
+      <ProductImage imageUrl={productData.image} />
       <ProductDetails
         name={productData.name}
         description={productData.description}

@@ -1,24 +1,29 @@
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  Text,
   FlatList,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import CartItemRender from "./CartItemRender";
-import VoucherScreen from "./VoucherScreen";
-import { cartData as initialCartData } from "../../constants";
+import { CustomPagination } from "../../components";
 import { Item, Voucher } from "../../interface";
 import { CartItemService, VoucherService } from "../../service";
-import { CustomPagination } from "../../components";
+import CartItemRender from "./CartItemRender";
+import VoucherScreen from "./VoucherScreen";
 
 const CartScreen = ({ navigation }) => {
+  useFocusEffect(
+    useCallback(() => {
+      fetchCartItem();
+    }, [])
+  );
   const [cartData, setCartData] = useState<Item[]>([]);
 
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedVoucherId, setSelectedVoucherId] = useState(null);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [selectedVoucherIds, setSelectedVoucherIds] = useState([]);
+  const [load, setLoad] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -42,71 +47,60 @@ const CartScreen = ({ navigation }) => {
   };
   useEffect(() => {
     fetchCartItem();
-  }, []);
+  }, [load]);
   const onSelectVoucher = (voucher) => {
-    setSelectedVoucherIds((currentSelectedVoucherIds) => {
-      if (currentSelectedVoucherIds.includes(voucher.id)) {
-        return currentSelectedVoucherIds.filter((id) => id !== voucher.id);
+    setSelectedVoucherId((currentSelectedVoucherId) => {
+      if (currentSelectedVoucherId === voucher.id) {
+        return null;
       } else {
-        return [...currentSelectedVoucherIds, voucher.id];
+        return voucher.id;
       }
     });
   };
 
-  const handleReduceQuantity = (itemId) => {
-    CartItemService.reduceQuantity(itemId);
+  const handleReduceQuantity = async (itemId) => {
+    await CartItemService.reduceQuantity(itemId);
     fetchCartItem();
   };
 
-  const handleRemoveItem = (itemId) => {
-    CartItemService.deleteCartItem(itemId);
+  const handleRemoveItem = async (itemId) => {
+    await CartItemService.deleteCartItem(itemId);
     fetchCartItem();
   };
-  const isSelected = (itemId) => selectedItems.includes(itemId);
+
   const handleItemPress = (itemId) => {
     navigation.navigate("ProductDetail", { itemId: itemId });
   };
 
-  const handleSelectItem = (itemId) => {
-    if (isSelected(itemId)) {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
-    } else {
-      setSelectedItems([...selectedItems, itemId]);
-    }
-  };
-
-  const calculateTotalSelectedItems = () => {
-    return selectedItems.reduce((acc, itemId) => {
-      const item = cartData.find((item) => item.id === itemId);
-      return item ? acc + item.price * item.quantity : acc;
+  const calculateTotal = () => {
+    return cartData.reduce((acc, item) => {
+      return acc + item.price * item.quantity;
     }, 0);
   };
 
   const calculateTotalDiscount = () => {
-    let totalAfterDiscount = calculateTotalSelectedItems();
+    let totalAfterDiscount = calculateTotal();
 
-    selectedVoucherIds.forEach((voucherId) => {
-      const voucher = vouchers.find((voucher) => voucher.id === voucherId);
+    if (selectedVoucherId) {
+      const voucher = vouchers.find(
+        (voucher) => voucher.id === selectedVoucherId
+      );
       if (voucher) {
         totalAfterDiscount -= (totalAfterDiscount * voucher.percent) / 100;
       }
-    });
+    }
 
-    const totalDiscount = calculateTotalSelectedItems() - totalAfterDiscount;
+    const totalDiscount = calculateTotal() - totalAfterDiscount;
     return totalDiscount;
   };
 
   const calculateTotalWithDiscounts = () => {
     const totalDiscount = calculateTotalDiscount();
-    const totalAfterDiscounts = calculateTotalSelectedItems() - totalDiscount;
+    const totalAfterDiscounts = calculateTotal() - totalDiscount;
     return totalAfterDiscounts;
   };
   const checkout = () => {
-    CartItemService.checkout(
-      selectedItems,
-      selectedVoucherIds,
-      calculateTotalWithDiscounts()
-    );
+    CartItemService.checkout(selectedVoucherId);
   };
 
   useEffect(() => {
@@ -123,15 +117,13 @@ const CartScreen = ({ navigation }) => {
             onRemove={handleRemoveItem}
             onAddQuantity={handleAddQuantity}
             onReduceQuantity={handleReduceQuantity}
-            onSelect={() => handleSelectItem(item.id)}
-            isSelected={isSelected(item.id)}
             onPress={() => handleItemPress(item.id)}
           />
         )}
       />
       <VoucherScreen
         vouchers={vouchers}
-        selectedVoucherIds={selectedVoucherIds}
+        selectedVoucherId={selectedVoucherId}
         onSelectVoucher={onSelectVoucher}
       />
       <CustomPagination
@@ -140,9 +132,6 @@ const CartScreen = ({ navigation }) => {
         onPageChange={handlePageChange}
       />
       <View style={styles.footer}>
-        <Text style={styles.totalItemsText}>
-          Selected Items ({selectedItems.length})
-        </Text>
         <Text style={styles.totalPriceText}>
           Total: ${calculateTotalWithDiscounts()}
         </Text>

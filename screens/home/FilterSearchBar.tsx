@@ -6,10 +6,21 @@ import {
   TouchableOpacity,
   Text,
   ScrollView,
+  FlatList,
 } from "react-native";
 
+interface PriceOption {
+  label: string;
+  min: string;
+  max: string;
+}
+
 interface FilterSearchBarProps {
-  onFilterChange: (filterType: string, query: string) => void;
+  onFilterChange: (
+    filterType: string,
+    query: string,
+    selectPrice: PriceOption
+  ) => void;
   typeMapping: { [key: string]: string };
 }
 
@@ -17,53 +28,87 @@ const FilterSearchBar: React.FC<FilterSearchBarProps> = ({
   onFilterChange,
   typeMapping,
 }) => {
+  const priceOptions: PriceOption[] = [
+    { label: "All prices", min: "0", max: "1000000000" },
+    { label: "100 - 200", min: "100", max: "200" },
+    { label: "200 - 300", min: "200", max: "300" },
+  ];
+
+  const renderItem = ({ item }: { item: PriceOption }) => {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.optionContainer,
+          item === selectedPrice && styles.selectedOption,
+        ]}
+        onPress={() => {
+          setSelectedPrice(item);
+          onFilterChange(selectedType, searchText, item);
+        }}
+      >
+        <Text style={styles.optionText}>{item.label}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   const [searchText, setSearchText] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedPrice, setSelectedPrice] = useState(priceOptions[0]);
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Search..."
-        style={styles.input}
-        onChangeText={(text) => {
-          setSearchText(text);
-          onFilterChange(selectedType, text);
-        }}
-      />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-      >
-        <TouchableOpacity
-          key={0}
-          style={[
-            styles.filterButton,
-            selectedType === "0" && styles.selectedFilterButton,
-          ]}
-          onPress={() => {
-            setSelectedType("0");
-            onFilterChange("0", searchText);
+    <View>
+      <View style={styles.container}>
+        <TextInput
+          placeholder="Search..."
+          style={styles.input}
+          onChangeText={(text) => {
+            setSearchText(text);
+            onFilterChange(selectedType, text, selectedPrice);
           }}
+        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterContainer}
         >
-          <Text style={styles.filterText}>All</Text>
-        </TouchableOpacity>
-        {Object.entries(typeMapping).map(([key, value]) => (
           <TouchableOpacity
-            key={key}
+            key={0}
             style={[
               styles.filterButton,
-              selectedType === key && styles.selectedFilterButton,
+              selectedType === "" && styles.selectedFilterButton,
             ]}
             onPress={() => {
-              setSelectedType(key);
-              onFilterChange(key, searchText);
+              setSelectedType("");
+              onFilterChange("", searchText, selectedPrice); // Passing selectedPrice here
             }}
           >
-            <Text style={styles.filterText}>{value}</Text>
+            <Text style={styles.filterText}>All</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {Object.entries(typeMapping).map(([key, value]) => (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.filterButton,
+                selectedType === key && styles.selectedFilterButton,
+              ]}
+              onPress={() => {
+                setSelectedType(key);
+                onFilterChange(key, searchText, selectedPrice); // Passing selectedPrice here
+              }}
+            >
+              <Text style={styles.filterText}>{value}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+      <FlatList
+        data={priceOptions}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
+      <Text style={styles.selectedPriceText}>
+        Selected Price: {selectedPrice.label}
+      </Text>
     </View>
   );
 };
@@ -96,6 +141,22 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: "#000",
+  },
+  optionContainer: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  optionText: {
+    fontSize: 16,
+  },
+  selectedOption: {
+    backgroundColor: "#e6f2ff",
+  },
+  selectedPriceText: {
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 

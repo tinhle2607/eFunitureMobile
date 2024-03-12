@@ -1,6 +1,14 @@
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface Field {
   key: string;
@@ -21,7 +29,10 @@ const UpdateObject: React.FC<UpdateObjectProps> = ({
   onUpdate,
 }) => {
   const [data, setData] = useState(initialData);
-
+  const handlePressDate = () => {
+    setIsSelectDate(true);
+  };
+  const [isSelectDate, setIsSelectDate] = useState(false);
   const handleChange = (key: string, value: any) => {
     setData({ ...data, [key]: value });
   };
@@ -59,6 +70,34 @@ const UpdateObject: React.FC<UpdateObjectProps> = ({
               />
             ))}
           </Picker>
+        );
+      case "date":
+        return (
+          <>
+            {isSelectDate && (
+              <DateTimePicker
+                value={data[field.key] ? new Date(data[field.key]) : new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  // Format the selected date to ISO string without time part
+                  const currentDate = selectedDate
+                    ? selectedDate.toISOString().split("T")[0]
+                    : data[field.key];
+                  handleChange(field.key, currentDate);
+                  setIsSelectDate(false);
+                }}
+                style={styles.datePicker}
+              />
+            )}
+            <TouchableOpacity onPress={handlePressDate}>
+              <Text style={styles.dateInput}>
+                {data[field.key]
+                  ? new Date(data[field.key]).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+          </>
         );
 
       default:
@@ -99,6 +138,28 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
+  },
+  datePicker: {
+    height: 50,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  },
+  selectedDateText: {
+    // Styles for the selected date text
+    fontSize: 16,
+    color: "#000",
+    marginTop: 10,
+    // Add more styling as per your requirement
+  },
+  dateInput: {
+    height: 40,
+    lineHeight: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    textAlign: "center",
   },
 });
 
