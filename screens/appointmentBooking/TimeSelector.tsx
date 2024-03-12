@@ -13,15 +13,15 @@ const TimeSlot = ({ time, onSelectTime, isSelected }) => (
 
 const TimeSelector = ({ selectedTime, onSelectTime }) => {
   const times = [
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:30 PM",
-    "2:15 PM",
-    "3:00 PM",
-    "4:30 PM",
-    "5:00 PM",
-    "6:15 PM",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:30",
+    "14:15",
+    "15:00",
+    "16:30",
+    "17:00",
+    "18:15",
   ];
 
   return (

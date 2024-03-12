@@ -23,7 +23,7 @@ const RegisterScreen = ({ navigation }) => {
       type: "picker",
       key: "gender",
       label: "Gender",
-      value: "",
+      value: "male",
       options: [
         { label: "Male", value: "male" },
         { label: "Female", value: "female" },

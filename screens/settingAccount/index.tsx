@@ -1,24 +1,62 @@
-import { View, Text, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  Button,
+} from "react-native";
 import { useEffect, useState } from "react";
-import { UpdateObject } from "../../components";
+import { DynamicForm, UpdateObject } from "../../components";
 import { Account } from "../../interface";
-import { AuthService } from "../../service";
+import { AccountService, AuthService } from "../../service";
 
 const initialData: Account = {
-  dateOfBird: "", // Fixed typo
-  email: "",
-  gender: "",
   id: "",
   name: "",
+  email: "",
   password: "",
+  address: "",
+  wallet: 0,
+  roles: "",
+  dateOfBird: "",
+  gender: "",
   phoneNumber: "",
-  userName: "",
+  lockoutEnd: "",
 };
-
+interface FormFieldDefinition {
+  type: "text" | "date" | "picker" | "password";
+  key: string;
+  label: string;
+  value: string | Date;
+  options?: { label: string; value: string }[];
+}
 const SettingAccount = () => {
+  const formFields: FormFieldDefinition[] = [
+    { type: "password", key: "oldPassword", label: "Mật khẩu cũ", value: "" },
+    { type: "password", key: "newPassword", label: "Mật khẩu mới", value: "" },
+    {
+      type: "password",
+      key: "confirmPassword",
+      label: "Xác nhận mật khẩu mới",
+      value: "",
+    },
+  ];
+  const [formData, setFormData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const handleFormChange = (key: string, value: string | Date) => {
+    setFormData({ ...formData, [key]: value });
+  };
+  const handleChangePass = async () => {
+    setIsLoading(true);
+    const response = await AccountService.changePassword(formData);
+    setIsLoading(false);
+  };
   const fields = [
     { key: "name", label: "Tên", type: "text" },
-    { key: "dateOfBird", label: "Ngày sinh", type: "text" },
+    { key: "dateOfBird", label: "Ngày sinh", type: "date" },
     {
       key: "gender",
       label: "Giới tính",
@@ -29,6 +67,7 @@ const SettingAccount = () => {
         { label: "Khác", value: "orther" },
       ],
     },
+    { key: "address", label: "Địa chỉ", type: "text" },
     { key: "phoneNumber", label: "Số điện thoại", type: "text" },
     { key: "email", label: "Email", type: "text" },
   ];
@@ -38,18 +77,14 @@ const SettingAccount = () => {
 
   const fetchData = async () => {
     setIsLoading(true);
-    const response = await AuthService.getCurrentUser();
+    const response = await AccountService.getAccounts();
     setData(response);
     setIsLoading(false);
   };
   const handleUpdate = (updatedData) => {
-    AuthService.updateUser(
-      updatedData.name,
-      updatedData.dateOfBird,
-      updatedData.gender,
-      updatedData.phoneNumber,
-      updatedData.email
-    );
+    setIsLoading(true);
+    AccountService.updateAccount(updatedData);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -67,6 +102,14 @@ const SettingAccount = () => {
         initialData={data}
         onUpdate={handleUpdate}
       />
+      <DynamicForm
+        formFields={formFields.map((field) => ({
+          ...field,
+          value: formData[field.key],
+        }))}
+        onChange={handleFormChange}
+      />
+      <Button title="Đổi mật khẩu" onPress={handleChangePass} color="#007bff" />
     </View>
   );
 };

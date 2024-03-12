@@ -2,7 +2,12 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import Routes from "./app/config/routers";
 
+import { AuthService } from "./service";
+
 const App = () => {
+  setInterval(async () => {
+    await AuthService.reNewToken();
+  }, 18000);
   return (
     <>
       <Routes />

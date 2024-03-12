@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -11,21 +11,41 @@ import FilterSearchBar from "./FilterSearchBar";
 import FurnitureItem from "./FurnitureItem";
 import { CategoryService, ProductService } from "../../service";
 import { Category, Product } from "../../interface";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
-const PAGE_SIZE = 10;
 const HomeScreen = ({ navigation }) => {
+  const priceOptions = [
+    { label: "All prices", min: "0", max: "1000000000" },
+    { label: "100 - 200", min: "100", max: "200" },
+    { label: "200 - 300", min: "200", max: "300" },
+  ];
+  const [user, setUser] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("all");
+  const [searchType, setSearchType] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [product, setProduct] = useState<Product[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [categories, setCategories] = useState<Category[]>([]);
   const [typeMapping, setTypeMapping] = useState<Record<string, string>>({});
+  const [selectedPrice, setSelectedPrice] = useState(priceOptions[0]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetch = async () => {
+        setUser(await AsyncStorage.getItem("user"));
+      };
+
+      fetchProducts();
+      fetch();
+    }, [])
+  );
   useEffect(() => {
     const fetchCategories = async () => {
       const response = await CategoryService.getCategories();
       setCategories(response);
     };
+
     fetchCategories();
   }, []);
 
@@ -36,31 +56,25 @@ const HomeScreen = ({ navigation }) => {
     }, {} as Record<string, string>);
     setTypeMapping(newTypeMapping);
   }, [categories]);
+  const fetchProducts = async () => {
+    const products = await ProductService.getProductsByPage(
+      currentPage,
+      searchQuery,
+      searchType,
+      selectedPrice
+    );
+    setTotalPages(products.totalPagesCount);
+    setProduct(products.items);
+  };
   useEffect(() => {
-    const fetchProducts = async () => {
-      const products = await ProductService.getProductsByPage(
-        currentPage,
-        searchQuery,
-        searchType
-      );
-      setProduct(products);
-    };
-    const fetchToTalPageProduct = async () => {
-      const total = await ProductService.getTotalPages(
-        currentPage,
-        searchQuery,
-        searchType
-      );
-      setTotalPages(total);
-    };
-    fetchToTalPageProduct();
     fetchProducts();
-  }, [searchType, searchQuery, currentPage]);
+  }, [searchType, searchQuery, currentPage, selectedPrice]);
 
-  const handleFilterChange = (type, query) => {
-    setSearchType(type);
-    setSearchQuery(query);
-    setCurrentPage(1);
+  const handleFilterChange = async (type, query, selectPrice) => {
+    await setSearchType(type);
+    await setSearchQuery(query);
+    await setSelectedPrice(selectPrice);
+    await setCurrentPage(1);
   };
 
   const handleItemPress = (id) => {
@@ -73,14 +87,20 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Button
-        title="Go to Login"
-        onPress={() => navigation.navigate("Login")}
-      />
-      <Button
-        title="Go to Appointment"
-        onPress={() => navigation.navigate("Appointment")}
-      />
+      {user == null ? (
+        <>
+          <Button
+            title="Go to Login"
+            onPress={() => navigation.navigate("Login")}
+          />
+        </>
+      ) : (
+        <Button
+          title="Go to Appointment"
+          onPress={() => navigation.navigate("Appointment")}
+        />
+      )}
+
       <FilterSearchBar
         onFilterChange={handleFilterChange}
         typeMapping={typeMapping}
@@ -92,7 +112,7 @@ const HomeScreen = ({ navigation }) => {
             id={item.id}
             name={item.name}
             price={item.price}
-            imageUri={item.imageUri}
+            imageUri={item.image}
             onPress={() => handleItemPress(item.id)}
           />
         )}

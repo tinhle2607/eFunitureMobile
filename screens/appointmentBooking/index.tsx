@@ -13,6 +13,7 @@ const AppointmentBookingPage = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [fullName, setFullName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [email, setEmail] = useState("");
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedTime || !fullName || !contactNumber) {
@@ -28,7 +29,8 @@ const AppointmentBookingPage = () => {
       selectedDate.toISOString(),
       selectedTime,
       fullName,
-      contactNumber
+      contactNumber,
+      email
     );
   };
 
@@ -47,6 +49,8 @@ const AppointmentBookingPage = () => {
         setFullName={setFullName}
         contactNumber={contactNumber}
         setContactNumber={setContactNumber}
+        email={email}
+        setEmail={setEmail}
       />
       <View style={styles.buttonContainer}>
         <Button title="Submit Appointment" onPress={handleSubmit} />

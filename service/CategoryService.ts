@@ -1,8 +1,10 @@
 import axios from "axios";
 
 import { Category } from "../interface";
+import API_URL_ENV from "../app/config/api";
+import Toast from "react-native-toast-message";
 
-const API_URL = "api";
+const API_URL = API_URL_ENV + `/Category`;
 const initialCategories: Category[] = [
   {
     id: "33",
@@ -25,16 +27,21 @@ const category: Category = {
 
 class CategoryService {
   static async getCategories() {
-    return initialCategories;
     try {
-      const response = await axios.get(`${API_URL}/Categories`, {});
-      if (response.data.success === true) {
+      const response = await axios.get(`${API_URL}/GetCategories`, {});
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
-        // toast.error(response.data.message);
+        Toast.show({
+          type: "error",
+          text1: response.data.message,
+        });
       }
     } catch (error) {
-      //   toast.error("Something went wrong");
+      Toast.show({
+        type: "error",
+        text1: "Error server",
+      });
     }
   }
 

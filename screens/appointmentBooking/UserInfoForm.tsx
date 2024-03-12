@@ -7,6 +7,8 @@ const UserInfoForm = ({
   setFullName,
   contactNumber,
   setContactNumber,
+  email,
+  setEmail,
 }) => (
   <View style={styles.formContainer}>
     <TextInput
@@ -17,9 +19,15 @@ const UserInfoForm = ({
     />
     <TextInput
       style={styles.input}
-      placeholder="Contact Number"
+      placeholder="Contact Phone"
       value={contactNumber}
       onChangeText={setContactNumber}
+    />
+    <TextInput
+      style={styles.input}
+      placeholder="Email"
+      value={email}
+      onChangeText={setEmail}
     />
   </View>
 );

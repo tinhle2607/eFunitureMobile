@@ -1,8 +1,11 @@
 import axios from "axios";
 
 import { Appointment } from "../interface";
+import API_URL_ENV from "../app/config/api";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "api";
+const API_URL = API_URL_ENV + `/Appointment`;
 const initialAppointments: Appointment[] = [
   {
     id: "66",
@@ -75,25 +78,35 @@ class AppointmentService {
     date: string,
     time: string,
     name: string,
-    phone: string
+    phone: string,
+    email: string
   ) {
-    console.log(date);
-    console.log(time);
-    console.log(name);
-    console.log(phone);
-    // // toast.success(
-    //   `Created appointment with description: ${appointmentData.email}`
-    // );
-    return;
     try {
-      const response = await axios.post(`${API_URL}/appointments`);
-      if (response.data.success !== true) {
-        return response.data.data;
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.post(`${API_URL}/CreateAppointment`, {
+        name: name,
+        date: date,
+        phoneNumber: phone,
+        email: email,
+        time: time,
+      });
+      if (response.data.isSuccess === true) {
+        Toast.show({
+          type: "success",
+          text1: response.data.message,
+        });
       } else {
-        // // toast.error(response.data.message);
+        Toast.show({
+          type: "error",
+          text1: response.data.message,
+        });
       }
     } catch (error) {
-      // toast.error("Something went wrong");
+      Toast.show({
+        type: "error",
+        text1: "Error server",
+      });
     }
   }
 

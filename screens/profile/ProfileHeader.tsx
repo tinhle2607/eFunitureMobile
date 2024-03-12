@@ -4,12 +4,12 @@ import { View, Text, Image, StyleSheet } from "react-native";
 const ProfileHeader = ({ userName, accountBalance }) => {
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: "path_to_profile_image" }}
-        style={styles.profileImage}
-      />
       <Text style={styles.userName}>{userName}</Text>
-      <Text style={styles.accountBalance}>{accountBalance}</Text>
+      {accountBalance ? (
+        <Text style={styles.accountBalance}>{accountBalance}</Text>
+      ) : (
+        <Text style={styles.accountBalance}>0</Text>
+      )}
     </View>
   );
 };

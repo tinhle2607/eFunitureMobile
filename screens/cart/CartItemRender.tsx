@@ -7,26 +7,10 @@ const CartItemRender = ({
   onRemove,
   onAddQuantity,
   onReduceQuantity,
-  onSelect,
-  isSelected,
   onPress,
 }) => {
   return (
     <View style={styles.itemContainer}>
-      <TouchableOpacity
-        onPress={() => onSelect(item.id)}
-        style={styles.radioContainer}
-      >
-        <View
-          style={[
-            styles.radioOuterCircle,
-            isSelected && styles.radioOuterCircleSelected,
-          ]}
-        >
-          {isSelected && <View style={styles.radioInnerCircle} />}
-        </View>
-      </TouchableOpacity>
-
       <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.productImage} />
       </View>
