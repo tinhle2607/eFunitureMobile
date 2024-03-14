@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 
 const API_URL = API_URL_ENV + `/Cart`;
+const API_URL_ORDER = API_URL_ENV + `/Order`;
 const initialCartItems: Item[] = [
   {
     id: "33",
@@ -164,8 +165,36 @@ class CartItemService {
       });
     }
   }
-  static async checkout(VoucherID: string) {
-    return;
+  static async checkout(VoucherID: string, account: any) {
+    if (VoucherID === null) VoucherID = "";
+    console.log(account);
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.post(`${API_URL_ORDER}/CheckOut`, {
+        phoneNumber: account.phoneNumber,
+        email: account.email,
+        address: account.address,
+        name: account.name,
+        voucherId: VoucherID,
+      });
+      if (response.data.isSuccess === true) {
+        Toast.show({
+          type: "success",
+          text1: response.data.message,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: response.data.message,
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong",
+      });
+    }
   }
 }
 
