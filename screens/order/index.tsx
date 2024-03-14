@@ -40,7 +40,12 @@ const Orderpages = ({ navigation }) => {
   const fetchData = async () => {
     const totalPages = await OrderService.getTotalPages();
     setTotalPages(totalPages);
-    const response = await OrderService.getOrders(currentPage, selectStatus);
+    const response = await OrderService.getOrders(
+      currentPage,
+      selectStatus,
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
     setData(response.items);
   };
   const onChangeStartDate = (event, selectedDate) => {
@@ -57,7 +62,7 @@ const Orderpages = ({ navigation }) => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, selectStatus]);
+  }, [currentPage, selectStatus, startDate, endDate]);
   const onUpdateStatus = () => {};
   const viewDetail = (id) => {
     navigation.navigate("OrderDetail", { itemId: id });

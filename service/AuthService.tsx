@@ -148,9 +148,7 @@ class AuthService {
         ] = `Bearer ${response.data.data.accessToken}`;
       }
       return;
-    } catch (error) {
-      console.error("Error renewing token:", error);
-    }
+    } catch (error) {}
     await AsyncStorage.removeItem("user");
 
     return;
