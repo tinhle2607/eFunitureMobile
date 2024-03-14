@@ -5,6 +5,7 @@ import API_URL_ENV from "../app/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = API_URL_ENV + `/Order`;
+const API_URL_OrderItems = API_URL_ENV + `/OrderDetail`;
 const initialOrders: Order[] = [
   {
     id: "33",
@@ -62,14 +63,17 @@ const initialStatus: Status[] = [
 ];
 
 class OrderService {
-  static async getOrders(currentPage: number, status: number) {
-    console.log(currentPage);
-    console.log(status);
+  static async getOrders(
+    currentPage: number,
+    status: number,
+    startDate: string,
+    endDate: string
+  ) {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken");
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.get(
-        `${API_URL}/GetOrderFilterByLogin?StatusCode=${status}&PageSize=10&PageIndex=${currentPage}`,
+        `${API_URL}/GetOrderFilterByLogin?StatusCode=${status}&PageSize=10&PageIndex=${currentPage}&FromTime=${startDate}&ToTime=${endDate}`,
         {}
       );
 
@@ -100,10 +104,19 @@ class OrderService {
     }
   }
   static async getItemOrder(OrderID: string) {
-    return initialItems;
     try {
-      const response = await axios.get(`${API_URL}/Orders/total-pages`, {});
-      if (response.data.success === true) {
+      const response = await axios.get(
+        `${API_URL_OrderItems}/GetOrderDetailsById?orderId=${OrderID}`,
+        {}
+      );
+      if (response.data.isSuccess === true) {
+        response.data.data.map((item) => {
+          item.image = item.product.image;
+          item.name = item.product.name;
+          item.id = item.orderId;
+        });
+
+        console.log(response.data.data);
         return response.data.data;
       } else {
         // toast.error(response.data.message);

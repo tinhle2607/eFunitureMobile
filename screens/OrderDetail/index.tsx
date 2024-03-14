@@ -44,7 +44,7 @@ const OrderDetailScreen = ({ route }) => {
       formatter: (value: number) => statusMapping[value],
     },
   ];
-  const [dataItem, setDataItem] = useState<Item[]>([]);
+  const [dataItem, setDataItem] = useState([]);
   const [orderStatus, setOrderStatus] = useState<Status[]>([]);
   const [Order, setOrder] = useState<Order>(initalOrder);
   const fetchStatus = async () => {
@@ -58,6 +58,7 @@ const OrderDetailScreen = ({ route }) => {
 
   const fetchData = async () => {
     const response = await OrderService.getItemOrder(itemId);
+    console.log(response);
     setDataItem(response);
   };
   useEffect(() => {
