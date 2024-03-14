@@ -1,8 +1,10 @@
 import axios from "axios";
 
 import { Item, Order, Status } from "../interface";
+import API_URL_ENV from "../app/config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "api";
+const API_URL = API_URL_ENV + `/Order`;
 const initialOrders: Order[] = [
   {
     id: "33",
@@ -61,10 +63,20 @@ const initialStatus: Status[] = [
 
 class OrderService {
   static async getOrders(currentPage: number, status: number) {
-    return initialOrders;
+    console.log(currentPage);
+    console.log(status);
     try {
-      const response = await axios.get(`${API_URL}/Orders`, {});
-      if (response.data.success === true) {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.get(
+        `${API_URL}/GetOrderFilterByLogin?StatusCode=${status}&PageSize=10&PageIndex=${currentPage}`,
+        {}
+      );
+
+      if (response.data.isSuccess === true) {
+        response.data.data.items.map((item) => {
+          item.status = item.statusOrderViewDTO.statusCode;
+        });
         return response.data.data;
       } else {
         // toast.error(response.data.message);

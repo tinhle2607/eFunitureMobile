@@ -3,7 +3,7 @@ import axios from "axios";
 import { Voucher } from "../interface";
 import API_URL_ENV from "../app/config/api";
 
-const API_URL = API_URL_ENV + `/Product`;
+const API_URL = API_URL_ENV + `/Vouchers`;
 const initialVouchers: Voucher[] = [
   {
     id: "33",
@@ -42,6 +42,7 @@ const voucher: Voucher = {
 
 class VoucherService {
   static async getVouchersByPage(currentPage: number) {
+    return initialVouchers;
     try {
       const response = await axios.get(`${API_URL}/Vouchers`, {});
       if (response.data.success === true) {

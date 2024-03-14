@@ -1,15 +1,18 @@
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Button,
   FlatList,
+  Modal,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { CustomPagination } from "../../components";
 import { Item, Voucher } from "../../interface";
-import { CartItemService, VoucherService } from "../../service";
+import { AccountService, CartItemService, VoucherService } from "../../service";
 import CartItemRender from "./CartItemRender";
 import VoucherScreen from "./VoucherScreen";
 
@@ -17,22 +20,33 @@ const CartScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchCartItem();
+      fetchAccount();
     }, [])
   );
   const [cartData, setCartData] = useState<Item[]>([]);
-
+  const [isCheckoutModalVisible, setIsCheckoutModalVisible] = useState(false);
   const [selectedVoucherId, setSelectedVoucherId] = useState(null);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [load, setLoad] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [account, setAccount] = useState({
+    name: "",
+    phoneNumber: "",
+    email: "",
+    address: "",
+  });
 
+  const fetchAccount = async () => {
+    const reponese = await AccountService.getAccounts();
+    setAccount(reponese);
+  };
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  const handleAddQuantity = (itemId) => {
-    CartItemService.addQuantity(itemId);
+  const handleAddQuantity = async (itemId) => {
+    await CartItemService.addQuantity(itemId);
     fetchCartItem();
   };
   const fetchVoucher = async () => {
@@ -47,6 +61,7 @@ const CartScreen = ({ navigation }) => {
   };
   useEffect(() => {
     fetchCartItem();
+    fetchVoucher();
   }, [load]);
   const onSelectVoucher = (voucher) => {
     setSelectedVoucherId((currentSelectedVoucherId) => {
@@ -60,12 +75,12 @@ const CartScreen = ({ navigation }) => {
 
   const handleReduceQuantity = async (itemId) => {
     await CartItemService.reduceQuantity(itemId);
-    fetchCartItem();
+    await setLoad(!load);
   };
 
   const handleRemoveItem = async (itemId) => {
     await CartItemService.deleteCartItem(itemId);
-    fetchCartItem();
+    await setLoad(!load);
   };
 
   const handleItemPress = (itemId) => {
@@ -99,8 +114,13 @@ const CartScreen = ({ navigation }) => {
     const totalAfterDiscounts = calculateTotal() - totalDiscount;
     return totalAfterDiscounts;
   };
-  const checkout = () => {
-    CartItemService.checkout(selectedVoucherId);
+  const checkoutButton = () => {
+    setIsCheckoutModalVisible(true);
+  };
+  const checkout = async () => {
+    await CartItemService.checkout(selectedVoucherId, account);
+    setIsCheckoutModalVisible(!isCheckoutModalVisible);
+    setLoad(!load);
   };
 
   useEffect(() => {
@@ -135,10 +155,57 @@ const CartScreen = ({ navigation }) => {
         <Text style={styles.totalPriceText}>
           Total: ${calculateTotalWithDiscounts()}
         </Text>
-        <TouchableOpacity style={styles.checkoutButton} onPress={checkout}>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={checkoutButton}
+        >
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isCheckoutModalVisible}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={account.name}
+              onChangeText={(text) => setAccount({ ...account, name: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+              value={account.phoneNumber}
+              onChangeText={(text) =>
+                setAccount({ ...account, phoneNumber: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              keyboardType="email-address"
+              value={account.email}
+              onChangeText={(text) => setAccount({ ...account, email: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Address"
+              value={account.address}
+              onChangeText={(text) => setAccount({ ...account, address: text })}
+            />
+
+            <Button title="Submit" onPress={checkout} />
+            <Button
+              title="Close"
+              onPress={() => setIsCheckoutModalVisible(!isCheckoutModalVisible)}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -243,6 +310,34 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    width: 200,
   },
 });
 

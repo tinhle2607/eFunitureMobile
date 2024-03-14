@@ -29,7 +29,6 @@ const FormElement: React.FC<FormFieldProps> = ({
 }) => {
   const [isSelectDate, setIsSelectDate] = useState(false);
   const handleDateChange = (event: any, selectedDate: Date | undefined) => {
-    // Call the onDateChange handler if it exists
     setIsSelectDate(false);
     if (onDateChange && selectedDate) {
       onDateChange(selectedDate);

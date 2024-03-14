@@ -155,7 +155,7 @@ class AppointmentService {
       const response = await axios.get(
         `${API_URL}/appointments/${appointmentId}`
       );
-      if (response.data.success !== true) {
+      if (response.data.isSuccess !== true) {
         return response.data.data;
       } else {
         // toast.error(response.data.message);

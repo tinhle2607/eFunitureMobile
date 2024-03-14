@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Platform, Button, TouchableOpacity } from "react-native";
 import {
   ObjectDetail,
   CustomDropdown,
@@ -10,9 +10,9 @@ import { Order } from "../../interface";
 import { StatusGraph } from "../../helper";
 import { OrderService } from "../../service/";
 import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const statusLabels: Record<number, string> = {
-  0: "All",
   1: "Pending",
   2: "To Ship",
   3: "Cancel",
@@ -25,20 +25,36 @@ statusGraph.addEdge(1, 3);
 const Orderpages = ({ navigation }) => {
   const columns = [
     { id: "address", label: "Địa chỉ", type: "text" },
-    { id: "amount", label: "Tổng tiền", type: "text" },
-    { id: "pay", label: "Đã trả", type: "text" },
+    { id: "phoneNumber", label: "Số điện thoại", type: "text" },
+    { id: "price", label: "Tổng tiền", type: "text" },
     { id: "status", label: "Trạng thái", type: "select" },
   ];
-  const [data, setData] = useState<Order[]>([]);
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectStatus, setSelectStatus] = useState(0);
+  const [selectStatus, setSelectStatus] = useState(1);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const fetchData = async () => {
     const totalPages = await OrderService.getTotalPages();
     setTotalPages(totalPages);
     const response = await OrderService.getOrders(currentPage, selectStatus);
-    setData(response);
+    setData(response.items);
   };
+  const onChangeStartDate = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setShowStartDatePicker(Platform.OS === "ios");
+    setStartDate(currentDate);
+  };
+
+  const onChangeEndDate = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    setShowEndDatePicker(Platform.OS === "ios");
+    setEndDate(currentDate);
+  };
+
   useEffect(() => {
     fetchData();
   }, [currentPage, selectStatus]);
@@ -58,6 +74,32 @@ const Orderpages = ({ navigation }) => {
           <Picker.Item key={key} label={value} value={key} />
         ))}
       </Picker>
+      <TouchableOpacity onPress={() => setShowStartDatePicker(true)}>
+        <Text>Ngày bắt đầu: {startDate.toDateString()}</Text>
+      </TouchableOpacity>
+      {showStartDatePicker && (
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display="default"
+          onChange={onChangeStartDate}
+        />
+      )}
+
+      <TouchableOpacity
+        onPress={() => setShowEndDatePicker(true)}
+        style={{ marginTop: 20 }}
+      >
+        <Text>Ngày kết thúc: {endDate.toDateString()}</Text>
+      </TouchableOpacity>
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={endDate}
+          mode="date"
+          display="default"
+          onChange={onChangeEndDate}
+        />
+      )}
       <CustomTable
         columns={columns}
         data={data}
