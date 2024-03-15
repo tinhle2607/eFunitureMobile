@@ -116,7 +116,6 @@ class OrderService {
           item.id = item.orderId;
         });
 
-        console.log(response.data.data);
         return response.data.data;
       } else {
         // toast.error(response.data.message);
@@ -126,7 +125,21 @@ class OrderService {
     }
   }
   static async getOrder(OrderID: string) {
-    return order;
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.get(
+        `${API_URL}/GetOrderById?orderId=${OrderID}`
+      );
+      if (response.data.isSuccess === true) {
+        response.data.data.status = response.data.data.statusOrder.statusCode;
+        return response.data.data;
+      } else {
+        // toast.error(response.data.message);
+      }
+    } catch (error) {
+      //   toast.error("Something went wrong");
+    }
   }
   static async getOrderStatus(OrderID: string) {
     return initialStatus;

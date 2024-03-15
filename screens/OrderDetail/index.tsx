@@ -22,35 +22,28 @@ const OrderDetailScreen = ({ route }) => {
   ];
   const OrderFields = [
     { key: "address", label: "Địa chỉ", type: "text" },
-    { key: "amount", label: "Tổng tiền", type: "text" },
+    { key: "price", label: "Tổng tiền", type: "text" },
     {
-      key: "pay",
-      label: "Đã trả",
+      key: "status",
+      label: "Trạng thái",
       type: "text",
+      formatter: (value) => statusMapping[value],
     },
+    { key: "phoneNumber", label: "Số điện thoại", type: "text" },
+    { key: "email", label: "Email", type: "text" },
+    { key: "name", label: "tên nhận", type: "text" },
   ];
   const statusMapping = {
     1: "Pending",
-    2: "Waiting",
-    3: "Completed",
-    4: "Cancelled",
+    2: "To Ship",
+    3: "Cancel",
+    4: "Recieve",
+    5: "Refuse to Confirm",
   };
-  const StatusColumns = [
-    { id: "date", label: "Thời gian", type: "text" },
-    {
-      id: "status",
-      label: "Trạng thái",
-      type: "text",
-      formatter: (value: number) => statusMapping[value],
-    },
-  ];
   const [dataItem, setDataItem] = useState([]);
-  const [orderStatus, setOrderStatus] = useState<Status[]>([]);
-  const [Order, setOrder] = useState<Order>(initalOrder);
-  const fetchStatus = async () => {
-    const response = await OrderService.getOrderStatus(itemId);
-    setOrderStatus(response);
-  };
+
+  const [Order, setOrder] = useState(initalOrder);
+
   const fetchtOrder = async () => {
     const response = await OrderService.getOrder(itemId);
     setOrder(response);
@@ -58,11 +51,9 @@ const OrderDetailScreen = ({ route }) => {
 
   const fetchData = async () => {
     const response = await OrderService.getItemOrder(itemId);
-    console.log(response);
     setDataItem(response);
   };
   useEffect(() => {
-    fetchStatus();
     fetchtOrder();
     fetchData();
   }, []);
@@ -70,7 +61,6 @@ const OrderDetailScreen = ({ route }) => {
   return (
     <View>
       <ObjectDetail fields={OrderFields} data={Order} />
-      <CustomTable columns={StatusColumns} data={orderStatus} />
       <CustomTable columns={columnsItem} data={dataItem} />
     </View>
   );
