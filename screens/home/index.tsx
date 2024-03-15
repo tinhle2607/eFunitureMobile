@@ -37,15 +37,15 @@ const HomeScreen = ({ navigation }) => {
       };
 
       fetchProducts();
+      fetchCategories();
       fetch();
     }, [])
   );
+  const fetchCategories = async () => {
+    const response = await CategoryService.getCategories();
+    setCategories(response);
+  };
   useEffect(() => {
-    const fetchCategories = async () => {
-      const response = await CategoryService.getCategories();
-      setCategories(response);
-    };
-
     fetchCategories();
   }, []);
 

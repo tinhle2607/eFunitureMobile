@@ -45,12 +45,13 @@ const appointment: Appointment = {
 
 class AppointmentService {
   static async getAppointmentsByPage(page: number) {
-    return initialAppointments;
     try {
-      const response = await axios.get(`${API_URL}/appointments`, {
-        params: { page },
-      });
-      if (response.data.success === true) {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.get(
+        `${API_URL}/GetAppointmentByJWT?pageIndex=${page - 1}&pageSize=10`
+      );
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
         // // toast.error(response.data.message);
@@ -131,31 +132,34 @@ class AppointmentService {
     appointmentID: string,
     newStatus: number
   ) {
-    console.log(appointmentID + newStatus);
-    // toast.success(`Updated appointment with ID: ${appointmentData.id}`);
-    return;
     try {
-      // const response = await axios.put(
-      //   `${API_URL}/appointments/${appointmentData.id}`,
-      //   appointmentData
-      // );
-      // if (response.data.success !== true) {
-      // toast.success(response.data.message);
-      // } else {
-      //   // toast.error(response.data.message);
-      // }
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.post(
+        `${API_URL}/UpdateAppointmentStatus?appointmentId=${appointmentID}&newStatus=${newStatus}`
+      );
+      if (response.data.isSuccess === true) {
+        Toast.show({
+          type: "success",
+          text1: response.data.message,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: response.data.message,
+        });
+      }
     } catch (error) {
       // toast.error("Something went wrong");
     }
   }
 
   static async getAppointmentById(appointmentId: string) {
-    return appointment;
     try {
       const response = await axios.get(
-        `${API_URL}/appointments/${appointmentId}`
+        `${API_URL}/GetAppointmentDetail?id=${appointmentId}`
       );
-      if (response.data.isSuccess !== true) {
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
         // toast.error(response.data.message);
