@@ -16,6 +16,7 @@ import AppointmentDetailScreen from "./appointmentDetail";
 import OrderDetailScreen from "./OrderDetail";
 import TransactionPages from "./transaction";
 import StatusOrderProcessingScreen from "./statusOrderProcess";
+import TransactionDetailScreen from "./transactionDetailScreen";
 export {
   Home,
   Login,
@@ -34,4 +35,5 @@ export {
   OrderDetailScreen,
   TransactionPages,
   StatusOrderProcessingScreen,
+  TransactionDetailScreen,
 };

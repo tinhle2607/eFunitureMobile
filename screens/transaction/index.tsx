@@ -1,39 +1,111 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+} from "react-native";
 import { CustomPagination, CustomTable } from "../../components";
 import { Transaction } from "../../interface";
 import { TransactionService } from "../../service";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const TransactionPages = ({ navigation }) => {
   const columns = [
     { id: "from", label: "Nguồn", type: "text" },
     { id: "to", label: "Nhận", type: "text" },
-    { id: "Amount", label: "Giá trị ", type: "text" },
-    { id: "date", label: "Ngày", type: "text" },
-    { id: "context", label: "nội dung ", type: "text" },
-    { id: "BalanceRemain", label: "Số dư tiện thời điểm", type: "text" },
+    { id: "amount", label: "Giá trị ", type: "text" },
+    {
+      id: "creationDate",
+      label: "Ngày",
+      type: "text",
+      formatter: (value) => formatDate(value),
+    },
+    { id: "balanceRemain", label: "Số dư", type: "text" },
   ];
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Transaction[]>([]);
-
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const onChangeStartDate = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setShowStartDatePicker(Platform.OS === "ios");
+    setStartDate(currentDate);
+  };
+  const formatDate = (dateIn: string) => {
+    var date = new Date(dateIn);
+    function pad(number) {
+      if (number < 10) {
+        return "0" + number;
+      }
+      return number;
+    }
+    var formattedDate =
+      date.getFullYear() +
+      "/" +
+      pad(date.getMonth() + 1) +
+      "/" +
+      pad(date.getDate());
+    return formattedDate;
+  };
+
+  const onChangeEndDate = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    setShowEndDatePicker(Platform.OS === "ios");
+    setEndDate(currentDate);
+  };
 
   const fetchData = async () => {
-    const totalPages = await TransactionService.getTotalPages();
-    setTotalPages(totalPages);
     const response = await TransactionService.getTransactionsByPage(
-      currentPage
+      currentPage,
+      startDate.toISOString(),
+      endDate.toISOString()
     );
-    setData(response);
+    setData(response.items);
+    setTotalPages(response.totalPagesCount);
+  };
+  const viewDetail = (id) => {
+    navigation.navigate("TransactionDetail", { itemId: id });
   };
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, startDate, endDate]);
 
   return (
     <View style={styles.container}>
-      <CustomTable columns={columns} data={data} />
+      <TouchableOpacity onPress={() => setShowStartDatePicker(true)}>
+        <Text>Ngày bắt đầu: {startDate.toDateString()}</Text>
+      </TouchableOpacity>
+      {showStartDatePicker && (
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display="default"
+          onChange={onChangeStartDate}
+        />
+      )}
+
+      <TouchableOpacity
+        onPress={() => setShowEndDatePicker(true)}
+        style={{ marginTop: 20 }}
+      >
+        <Text>Ngày kết thúc: {endDate.toDateString()}</Text>
+      </TouchableOpacity>
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={endDate}
+          mode="date"
+          display="default"
+          onChange={onChangeEndDate}
+        />
+      )}
+      <CustomTable columns={columns} data={data} viewDetail={viewDetail} />
       <CustomPagination
         totalPages={totalPages}
         currentPage={currentPage}

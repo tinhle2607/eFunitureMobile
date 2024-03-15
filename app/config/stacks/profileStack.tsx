@@ -10,6 +10,7 @@ import {
   TransactionPages,
   StatusOrderProcessingScreen,
   Login,
+  TransactionDetailScreen,
 } from "../../../screens";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
@@ -77,6 +78,11 @@ const ProfileStackNavigator = ({ navigation }) => {
             name="StatusOderProcessing"
             component={StatusOrderProcessingScreen}
             options={{ title: "Status" }}
+          />
+          <Stack.Screen
+            name="TransactionDetail"
+            component={TransactionDetailScreen}
+            options={{ title: "Transaction Detail" }}
           />
         </>
       ) : (
