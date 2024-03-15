@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import Routes from "./app/config/routers";
 
 import { AuthService } from "./service";
 
 const App = () => {
+  useEffect(async () => {
+    AuthService.reNewToken();
+  }, []);
   setInterval(async () => {
     await AuthService.reNewToken();
   }, 18000);

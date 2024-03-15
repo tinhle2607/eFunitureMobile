@@ -29,30 +29,30 @@ const AppointmentDetailScreen = ({ route }) => {
   statusGraph.addEdge(2, 4);
   statusGraph.addEdge(1, 4);
   const appointmentFields = [
-    { key: "nameCustomer", label: "Customer Name", type: "text" },
-    { key: "nameStaff", label: "Staff Name", type: "text" },
+    { key: "customerName", label: "Customer Name", type: "text" },
+    { key: "staffName", label: "Staff Name", type: "text" },
     {
       key: "date",
       label: "Date",
       type: "text",
     },
-    { key: "email", label: "Email", type: "text" },
-    { key: "phone", label: "Phone", type: "text" },
     { key: "time", label: "Time", type: "text" },
-    { key: "description", label: "Description", type: "text" },
+    { key: "email", label: "Email", type: "text" },
+    { key: "phoneNumber", label: "Phone", type: "text" },
+    { key: "name", label: "Description", type: "text" },
   ];
-  const [appointment, setAppointment] =
-    useState<Appointment>(initalAppointment);
+  const [load, setLoad] = useState<boolean>(false);
+  const [appointment, setAppointment] = useState(initalAppointment);
   const fetchAppointment = async () => {
     const response = await AppointmentService.getAppointmentById(itemId);
     setAppointment(response);
   };
   useEffect(() => {
     fetchAppointment();
-  }, []);
-  const onUpdateStatus = (AppointmentID: string, newStatus: number) => {
+  }, [load]);
+  const onUpdateStatus = async (AppointmentID: string, newStatus: number) => {
     AppointmentService.updateAppointmentStatus(AppointmentID, newStatus);
-    fetchAppointment();
+    setLoad(!load);
   };
   const nextStatusOptions = statusGraph
     .getNextStates(appointment.status)
