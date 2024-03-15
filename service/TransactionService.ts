@@ -1,8 +1,10 @@
 import axios from "axios";
 
 import { Transaction } from "../interface";
+import API_URL_ENV from "../app/config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "api";
+const API_URL = API_URL_ENV + `/Transaction`;
 const initialTransactions: Transaction[] = [
   {
     id: "231",
@@ -37,11 +39,19 @@ const initialTransactions: Transaction[] = [
 ];
 
 class TransactionService {
-  static async getTransactionsByPage(currentPage: number) {
-    return initialTransactions;
+  static async getTransactionsByPage(
+    currentPage: number,
+    startDate: string,
+    endDate: string
+  ) {
     try {
-      const response = await axios.get(`${API_URL}/Transactions`, {});
-      if (response.data.success === true) {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.get(
+        `${API_URL}/FilterTransactionByLogin?FromTime=${startDate}&ToTime=${endDate}&PageIndex=${currentPage}&PageSize=10`
+      );
+      console.log(response.data.data);
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
         // toast.error(response.data.message);
@@ -51,14 +61,15 @@ class TransactionService {
     }
   }
 
-  static async getTotalPages() {
-    return 40;
+  static async getTransactionById(id: string) {
     try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.get(
-        `${API_URL}/Transactions/total-pages`,
+        `${API_URL}/GetTransactionById?transactionId=${id}`,
         {}
       );
-      if (response.data.success === true) {
+      if (response.data.isSuccess === true) {
         return response.data.data;
       } else {
         // toast.error(response.data.message);

@@ -123,18 +123,20 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start", // Align items to the left
     alignItems: "center",
     padding: 10,
-    backgroundColor: "#f2f2f2", // Màu nền cho header
+    backgroundColor: "#f2f2f2",
   },
   headerText: {
     fontWeight: "bold",
     fontSize: 16,
+    flex: 1,
+    textAlign: "left",
+    marginLeft: 10,
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
     borderBottomWidth: 1,
@@ -142,6 +144,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
+    flex: 1,
+    textAlign: "left",
+    marginLeft: 10,
   },
   imageContainer: {
     borderRadius: 25,
