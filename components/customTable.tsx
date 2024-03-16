@@ -60,22 +60,23 @@ const CustomTable: React.FC<CustomTableProps> = ({
             case "select":
               if (!statusMapping) return null;
               return (
-                <CustomDropdown
-                  key={column.id}
-                  currentValue={statusMapping[item[column.id]]}
-                  options={nextStatusOptions}
-                  onSelect={(selectedValue) => {
-                    const newStatus = parseInt(
-                      Object.keys(statusMapping).find(
-                        (key) => statusMapping[key] === selectedValue
-                      ) || "0",
-                      10
-                    );
-                    if (onUpdateStatus) {
-                      onUpdateStatus(item.id, newStatus);
-                    }
-                  }}
-                />
+                <View style={styles.text} key={column.id}>
+                  <CustomDropdown
+                    currentValue={statusMapping[item[column.id]]}
+                    options={nextStatusOptions}
+                    onSelect={(selectedValue) => {
+                      const newStatus = parseInt(
+                        Object.keys(statusMapping).find(
+                          (key) => statusMapping[key] === selectedValue
+                        ) || "0",
+                        10
+                      );
+                      if (onUpdateStatus) {
+                        onUpdateStatus(item.id, newStatus);
+                      }
+                    }}
+                  />
+                </View>
               );
             case "image":
               return (
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "flex-start", // Align items to the left
+    justifyContent: "flex-start",
     alignItems: "center",
     padding: 10,
     backgroundColor: "#f2f2f2",

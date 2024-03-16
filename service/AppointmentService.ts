@@ -46,26 +46,20 @@ const appointment: Appointment = {
 class AppointmentService {
   static async getAppointmentsByPage(page: number) {
     try {
-        const response = await axios.get(`${API_URL}/GetAppointmentPaging`, {
-              params: {
-                page: page,
-                pageSize: 10,
-              },
-            
-        });
-
-        if (response.data.isSuccess === true) {
-            return response.data.data;
-        } else {
-          console.error(response.data.message);
-          throw new Error(response.data.message);
-        }
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.get(
+        `${API_URL}/GetAppointmentByJWT?pageIndex=${page - 1}&pageSize=10`
+      );
+      if (response.data.isSuccess === true) {
+        return response.data.data;
+      } else {
+        // // toast.error(response.data.message);
+      }
     } catch (error) {
-        // Xử lý lỗi khi không thể kết nối hoặc yêu cầu không thành công
-        throw error;
+      //   // toast.error("Something went wrong");
     }
-}
-
+  }
 
   static async getTotalPages() {
     return 40;
@@ -138,77 +132,42 @@ class AppointmentService {
     appointmentID: string,
     newStatus: number
   ) {
-    console.log(appointmentID + newStatus);
-    // toast.success(`Updated appointment with ID: ${appointmentData.id}`);
-    return;
     try {
-      // const response = await axios.put(
-      //   `${API_URL}/appointments/${appointmentData.id}`,
-      //   appointmentData
-      // );
-      // if (response.data.success !== true) {
-      // toast.success(response.data.message);
-      // } else {
-      //   // toast.error(response.data.message);
-      // }
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.post(
+        `${API_URL}/UpdateAppointmentStatus?appointmentId=${appointmentID}&newStatus=${newStatus}`
+      );
+      if (response.data.isSuccess === true) {
+        Toast.show({
+          type: "success",
+          text1: response.data.message,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: response.data.message,
+        });
+      }
     } catch (error) {
       // toast.error("Something went wrong");
     }
   }
 
   static async getAppointmentById(appointmentId: string) {
-    try{
-      const response = await axios.get(`${API_URL}//GetAppointmentDetail`,{
-        params:{
-          id:appointmentId,
-        }
-      });
-    
-    if (response.data.isSuccess== true){
-      return response.data.data;
-    }
-    else{
-      Toast.show({
-        type: "error",
-        text1: response.data.message,
-      });
-    }}
-  catch(error){
-    Toast.show({
-      type: "error",
-      text1: "Error sever",
-    });
-  }
-  }
-
- static async getAppointmentByLogin(jwtToken: string, page: number) {
-  try {
-      const response = await axios.get(`${API_URL}/GetAppointmentByJWT`, {
-          params: {
-            page:page,
-            pageSize: 10,
-          },
-          headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              'Content-Type': 'application/json'
-          }
-      });
-
+    try {
+      const response = await axios.get(
+        `${API_URL}/GetAppointmentDetail?id=${appointmentId}`
+      );
       if (response.data.isSuccess === true) {
-          return response.data.data;
+        return response.data.data;
       } else {
-          Toast.show({
-              type: "error",
-              text1: response.data.message,
-          });
+        // toast.error(response.data.message);
       }
-  } catch (error) {
-      Toast.show({
-          type: "error",
-          text1: "Server Error",
-      });
+    } catch (error) {
+      // toast.error("Something went wrong");
+    }
   }
-}
 }
 
 export { AppointmentService as default };

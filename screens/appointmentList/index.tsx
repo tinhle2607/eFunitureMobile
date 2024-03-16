@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { CustomTable, CustomPagination } from "../../components";
 import { StatusGraph } from "../../helper";
 import { Appointment } from "../../interface";
 import { AppointmentService } from "../../service";
+import { useFocusEffect } from "@react-navigation/native";
 
 const statusMapping = {
   1: "Pending",
@@ -17,31 +18,37 @@ statusGraph.addEdge(2, 4);
 statusGraph.addEdge(1, 4);
 
 const App = ({ navigation }) => {
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
   const columns = [
-    { id: "nameStaff", label: "Tên nhân viên ", type: "text" },
-    { id: "description", label: "Mô tả", type: "text" },
+    { id: "staffName", label: "Tên nhân viên ", type: "text" },
+    { id: "date", label: "Ngày", type: "text" },
     { id: "status", label: "Trạng thái", type: "select" },
   ];
   const [data, setData] = useState<Appointment[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [load, setLoad] = useState<boolean>(false);
 
   const fetchData = async () => {
-    const totalPages = await AppointmentService.getTotalPages();
-    setTotalPages(totalPages);
     const response = await AppointmentService.getAppointmentsByPage(
       currentPage
     );
-    setData(response);
+    setData(response.items);
+    setTotalPages(response.totalPagesCount);
   };
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, load]);
 
-  const onUpdateStatus = (id, newStatus) => {
-    AppointmentService.updateAppointmentStatus(id, newStatus);
+  const onUpdateStatus = async (id, newStatus) => {
+    await AppointmentService.updateAppointmentStatus(id, newStatus);
     fetchData();
+    setLoad(!load);
   };
   const viewDetail = (id) => {
     navigation.navigate("AppointmentDetail", { itemId: id });
